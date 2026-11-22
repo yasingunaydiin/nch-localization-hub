@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NCH Localization Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: sticky top bar with search, left-aligned sections in a responsive grid; every section has its own Edit toggle */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --fg:#1b2430; --muted:#5d6b7c; --line:#dde3ea;
+  --accent:#1f62c4; --accent-soft:#e4eefb; --red:#c8281f; --red-soft:#fbe6e4;
+  --green:#1d7a46; --green-soft:#e0f3e8; --amber:#9a6200; --amber-soft:#fcefd2;
+  --font-body:'Inter',system-ui,sans-serif; --font-head:'Space Grotesk','Inter',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171e; --surface:#1a212b; --fg:#e6ebf1; --muted:#93a1b3; --line:#2b3542;
+  --accent:#6aa5f5; --accent-soft:#1d2d46; --red:#ff7b72; --red-soft:#3a1f1f;
+  --green:#5cc98a; --green-soft:#17301f; --amber:#e8b04a; --amber-soft:#35290f; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12171e; --surface:#1a212b; --fg:#e6ebf1; --muted:#93a1b3; --line:#2b3542;
+  --accent:#6aa5f5; --accent-soft:#1d2d46; --red:#ff7b72; --red-soft:#3a1f1f;
+  --green:#5cc98a; --green-soft:#17301f; --amber:#e8b04a; --amber-soft:#35290f; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 0 12px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;border-bottom:1px solid var(--line);margin-bottom:24px}
+h1{font-family:var(--font-head);font-size:20px;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.search{flex:1 1 260px;min-width:0}
+.search input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font:inherit}
+.search input:focus,button:focus-visible,a:focus-visible,.ein:focus{outline:2px solid var(--accent);outline-offset:2px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px;font-weight:500}
+nav a:hover{background:var(--accent-soft);color:var(--accent)}
+section{margin-bottom:36px;scroll-margin-top:90px}
+h2{font-family:var(--font-head);font-size:16px;margin:0 0 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+h2 small{font:500 12px var(--font-body);color:var(--muted)}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.grid>*{min-width:0}
+.group{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 14px 10px}
+.link{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.link:first-of-type{border-top:0}
+.link a{color:var(--fg);text-decoration:none;font-weight:500;flex:1;min-width:0}
+.link a:hover{color:var(--accent);text-decoration:underline}
+.link small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.link .name{flex:1;min-width:0}
+.missing{color:var(--muted)}
+button{font:inherit;cursor:pointer}
+.mini{border:1px solid var(--line);background:transparent;color:var(--accent);border-radius:5px;padding:2px 8px;font-size:12px}
+.mini:hover{background:var(--accent-soft)}
+#toolgrid .link .mini{display:none}
+#tools.editing #toolgrid .link .mini{display:inline-block}
+.mini.x{color:var(--muted);padding:2px 7px;line-height:1.2}
+.mini.x:hover{background:var(--red-soft);color:var(--red)}
+section.editing [data-toggle]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.edit,.addrow{display:flex;gap:6px;margin:0 0 8px}
+.addrow{margin:10px 0 4px}
+.ein,.edit input{flex:1;min-width:0;width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px}
+.addrow .ein{width:auto}
+.edit-only{display:none}
+section.editing .edit-only{display:flex}
+section.editing .view-only{display:none}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.tag.red{background:var(--red-soft);color:var(--red)}
+.tag.green{background:var(--green-soft);color:var(--green)}
+.tag.amber{background:var(--amber-soft);color:var(--amber)}
+.tag.blue{background:var(--accent-soft);color:var(--accent)}
+.todo label{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}
+.todo label:first-child{border-top:0}
+.todo input[type=checkbox]{margin-top:3px;accent-color:var(--accent)}
+.todo input:checked+span{color:var(--muted);text-decoration:line-through}
+.todo .lnk{margin-left:auto;font-size:12px;color:var(--accent)}
+.erow{display:flex;gap:6px;align-items:center;padding:4px 0}
+.erow .stack{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:first-child td{border-top:0}
+section.editing td{padding:6px 8px}
+.tablefoot{padding:8px 12px;border-top:1px solid var(--line)}
+.mono{font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:12px;margin:10px 0 0}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:4px}
+.pill .x{border:0;background:transparent;color:inherit;padding:0 2px;font-size:14px;line-height:1}
+.empty{display:none;color:var(--muted);padding:20px 0}
+.hide{display:none!important}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.two>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.theme{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:5px 10px;font-size:12px}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>NCH <span>Localization Hub</span></h1>
+  <div class="search"><input id="q" type="search" placeholder="Search tools, tasks, programs, pages…" aria-label="Search"></div>
+  <nav>
+    <a href="#tools">Tools</a><a href="#todo">To do</a><a href="#tutorials">Tutorials</a><a href="#web">Web pages</a><a href="#programs">Programs</a>
+  </nav>
+</header>
+
+<p id="noresults" class="empty">Nothing matches that search.</p>
+
+<section id="tools" data-s>
+  <h2>Tools <button class="mini" data-toggle="tools" aria-pressed="false">Edit</button> <button class="mini" id="restore" hidden></button> <small class="hint">Use Edit to add missing links or remove tools. Saved in this browser.</small></h2>
+  <div class="grid" id="toolgrid"></div>
+</section>
+
+<section id="todo" data-s>
+  <h2>To do <small id="todocount"></small> <button class="mini" data-toggle="todo" aria-pressed="false">Edit</button> <button class="mini" data-reset="todo" hidden>Reset to defaults</button></h2>
+  <div class="two">
+    <div class="card todo" data-group><h3>This week</h3><div id="L-t-week"></div></div>
+    <div class="card todo" data-group><h3>Upcoming</h3><div id="L-t-up"></div></div>
+    <div class="card todo" data-group><h3>After weekly SVN</h3><div id="L-t-svn"></div></div>
+    <div class="card todo" data-group><h3>Recurring</h3><div id="L-t-rec"></div></div>
+    <div class="card todo" data-group><h3>Dutch page checks</h3><div id="L-t-nl"></div></div>
+    <div class="card todo" data-group><h3>Later</h3><div id="L-t-later"></div></div>
+  </div>
+</section>
+
+<section id="tutorials" data-s>
+  <h2>Video tutorials <button class="mini" data-toggle="tutorials" aria-pressed="false">Edit</button> <button class="mini" data-reset="tutorials" hidden>Reset to defaults</button> <small class="hint">English and Dutch, then cut-downs for TikTok, Facebook and YouTube Shorts</small></h2>
+  <div class="tablebox" id="L-tuts"></div>
+</section>
+
+<section id="web" data-s>
+  <h2>Web page translations <button class="mini" data-toggle="web" aria-pressed="false">Edit</button> <button class="mini" data-reset="web" hidden>Reset to defaults</button> <small class="hint">Each program has a home page plus a varying number of theme pages</small></h2>
+  <div class="tablebox" id="L-webq"></div>
+  <p class="note">Snapshot of the upload queue, all marked "weekly svn update". Check the live queue in ProgramTrack for the current state.</p>
+</section>
+
+<section id="programs" data-s>
+  <h2>Programs <button class="mini" data-toggle="programs" aria-pressed="false">Edit</button> <button class="mini" data-reset="programs" hidden>Reset to defaults</button> <small class="hint">Russian MTs already translated in PT, and what is still open</small></h2>
+  <div class="two">
+    <div class="card" data-group>
+      <h3>RU done</h3>
+      <div id="L-ru"></div>
+      <p class="note">After the red MTs are finished, start manually releasing.</p>
+    </div>
+    <div class="card todo" data-group>
+      <h3>Open items</h3>
+      <div id="L-open"></div>
+    </div>
+  </div>
+</section>
+
+<p class="note" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">First version built from your screenshots and to-do list. <button class="theme" id="themebtn">Switch theme</button></p>
+</div>
+
+<script>
+/* Loads your private data.local.js if it exists, otherwise the generic data.example.js, then the app. */
+(function(){
+  function load(src,ok,fail){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=fail;document.body.appendChild(s)}
+  function app(){load('app.js')}
+  load('data.local.js',app,function(){load('data.example.js',app,app)});
+})();
+</script>
+</html>
